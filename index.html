@@ -1,0 +1,1150 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>庞土灏 — 游戏编辑 / 内容创作者</title>
+<style>
+/* ========== FONTS ========== */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+/* ========== RESET & VARIABLES ========== */
+:root {
+  --bg: #0b0d1a;
+  --bg-alt: #0e1125;
+  --surface: rgba(255,255,255,0.025);
+  --surface-hover: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.05);
+  --text: #e8e6e3;
+  --text-dim: rgba(232,230,227,0.55);
+  --text-muted: rgba(232,230,227,0.3);
+  --accent: #6c7dff;
+  --accent-glow: rgba(108,125,255,0.35);
+  --accent2: #7dd3fc;
+  --accent3: #c084fc;
+  --gold: #94a3b8;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+body {
+  font-family: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ========== CUSTOM CURSOR ========== */
+.cursor { position: fixed; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; mix-blend-mode: difference; transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s; }
+.cursor-follower { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: none; z-index: 9998; mix-blend-mode: difference; transition: transform 0.3s ease, width 0.3s, height 0.3s, border-color 0.3s; }
+.cursor.hover { width: 16px; height: 16px; background: var(--accent2); }
+.cursor-follower.hover { width: 60px; height: 60px; border-color: var(--accent2); }
+
+/* ========== CANVAS BG ========== */
+#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+/* ========== NOISE OVERLAY ========== */
+.noise { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9997; opacity: 0.015; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; }
+
+/* ========== MAIN CONTAINER ========== */
+main { position: relative; z-index: 1; }
+
+/* ========== NAV ========== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 1.5rem 4rem;
+  display: flex; justify-content: space-between; align-items: center;
+  mix-blend-mode: difference;
+  transition: all 0.4s var(--transition);
+}
+nav .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; color: #fff; }
+nav .logo span { color: var(--accent); }
+nav .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+nav .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.3s; position: relative; }
+nav .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s var(--transition); }
+nav .nav-links a:hover { color: #fff; }
+nav .nav-links a:hover::after { width: 100%; }
+
+/* Hamburger — hidden by default, shown on mobile */
+.nav-toggle { display: none; }
+
+/* Mobile menu overlay */
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: opacity 0.35s; pointer-events: none; }
+.nav-overlay.active { display: block; opacity: 1; pointer-events: auto; }
+
+/* ========== SECTION STYLES ========== */
+section { padding: 6rem 4rem; position: relative; }
+section:nth-child(even) { background: rgba(255,255,255,0.01); }
+.section-divider { display: none; }
+
+.section-tag {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1rem; display: block; opacity: 0.7;
+}
+.section-title {
+  font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -0.03em;
+  line-height: 1.1; margin-bottom: 1.5rem; position: relative;
+}
+.section-title .highlight { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.section-number {
+  position: absolute; top: -1.2rem; left: -3.5rem;
+  font-size: 7rem; font-weight: 900; letter-spacing: -0.05em;
+  color: rgba(108,125,255,0.04); pointer-events: none; line-height: 1;
+  z-index: 0;
+}
+.section-header { position: relative; }
+
+/* ========== HERO ========== */
+.hero {
+  min-height: 100vh; display: flex; align-items: center; position: relative;
+  padding: 0 4rem; overflow: hidden; gap: 6rem;
+}
+.hero-content { flex: 1; max-width: 800px; }
+.hero-avatar-wrap { flex-shrink: 0; position: relative; animation: fadeInUp 0.8s 0.5s var(--transition) both; }
+.hero-avatar-large { width: 280px; height: 280px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); filter: grayscale(15%) contrast(1.1); transition: all 0.5s; }
+.hero-avatar-wrap:hover .hero-avatar-large { filter: grayscale(0%); border-color: rgba(255,255,255,0.3); }
+.hero-avatar-ring-outer { position: absolute; inset: -20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.06); animation: ringSpin 20s linear infinite; }
+.hero-avatar-ring-inner { position: absolute; inset: -12px; border-radius: 50%; border: 1px dashed rgba(124,92,252,0.2); animation: ringSpin 12s linear infinite reverse; }
+.hero-avatar-badge { position: absolute; bottom: 0; right: 0; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 0.5rem 1rem; border-radius: 100px; white-space: nowrap; font-weight: 600; letter-spacing: 0.04em; }
+.hero .greeting { font-size: 1rem; font-weight: 500; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1.5rem; display: block; animation: fadeInUp 0.8s var(--transition) forwards; }
+.hero h1 { font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 1.5rem; animation: fadeInUp 0.8s 0.2s var(--transition) both; }
+.hero h1 .dot { color: var(--accent); }
+.hero .subtitle { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text-dim); font-weight: 300; max-width: 500px; margin-bottom: 2.5rem; animation: fadeInUp 0.8s 0.4s var(--transition) both; }
+.hero .hero-meta { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem; animation: fadeInUp 0.8s 0.6s var(--transition) both; }
+.hero .hero-meta span { font-size: 0.875rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.5rem; }
+.hero .hero-meta span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); }
+.hero .hero-contact { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem; animation: fadeInUp 0.8s 0.7s var(--transition) both; }
+.hero .hero-contact a,
+.hero .hero-contact span { font-size: 0.875rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.5rem; text-decoration: none; transition: color 0.3s; }
+.hero .hero-contact a:hover { color: #fff; }
+.hero .hero-contact .contact-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.hero .hero-contact .contact-dot.email { background: var(--accent); }
+.hero .hero-contact .contact-dot.phone { background: var(--accent2); }
+.hero .hero-contact .contact-dot.location { background: var(--gold); }
+.hero .hero-contact .contact-dot.edu { background: var(--accent3); }
+.hero .cta-group { display: flex; gap: 1rem; animation: fadeInUp 0.8s 0.8s var(--transition) both; }
+.hero .scroll-indicator { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); animation: floatDown 2s ease-in-out infinite; }
+.hero .scroll-indicator span { display: block; width: 1px; height: 60px; background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent); }
+
+/* ========== GLOW ORB ========== */
+.glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: -1; }
+.glow-orb.purple { width: 600px; height: 600px; background: rgba(108,125,255,0.08); top: -300px; right: -200px; }
+.glow-orb.green { width: 400px; height: 400px; background: rgba(125,211,252,0.05); bottom: 20%; left: -200px; }
+.glow-orb.red { width: 300px; height: 300px; background: rgba(192,132,252,0.04); top: 50%; right: 15%; }
+
+/* ========== BUTTONS ========== */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.8rem; border-radius: 100px; font-size: 0.85rem; font-weight: 500;
+  text-decoration: none; letter-spacing: 0.03em; transition: all 0.4s var(--transition);
+  position: relative; overflow: hidden; cursor: none;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #8390ff; transform: translateY(-1px); box-shadow: 0 8px 30px var(--accent-glow); }
+.btn-outline { border: 1px solid rgba(255,255,255,0.12); color: #fff; }
+.btn-outline:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); transform: translateY(-1px); }
+
+/* ========== ABOUT ========== */
+.about-grid { display: grid; grid-template-columns: 1fr; gap: 4rem; align-items: center; position: relative; }
+.about-watermark {
+  position: absolute; right: -80px; top: 50%; transform: translateY(-50%);
+  font-size: 16rem; font-weight: 900; letter-spacing: -0.05em;
+  color: rgba(255,255,255,0.015); pointer-events: none; line-height: 1;
+  white-space: nowrap; user-select: none; z-index: 0;
+}
+.about-avatar-wrap { position: relative; display: none; }
+.about-avatar { width: 100%; aspect-ratio: 1; border-radius: var(--radius); object-fit: cover; border: 1px solid var(--border); filter: grayscale(20%) contrast(1.1); transition: all 0.5s var(--transition); }
+.about-avatar-wrap:hover .about-avatar { filter: grayscale(0%); }
+.about-avatar-ring { position: absolute; inset: -8px; border-radius: calc(var(--radius) + 8px); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; animation: ringPulse 4s ease-in-out infinite; }
+.about-info h3 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+.about-info .role-tag { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 100px; background: rgba(124,92,252,0.15); color: var(--accent); font-size: 0.8rem; margin-bottom: 1.5rem; }
+.about-info .bio { color: var(--text-dim); line-height: 1.8; margin-bottom: 2rem; max-width: 500px; }
+
+.skill-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.skill-tag { padding: 0.45rem 1rem; border-radius: 100px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--text-dim); transition: all 0.3s; }
+.skill-tag:hover { border-color: var(--accent); color: #fff; background: rgba(124,92,252,0.1); }
+
+/* ========== EXPERIENCE ========== */
+.timeline { position: relative; padding-left: 2rem; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent); }
+.timeline-item { position: relative; padding-bottom: 3rem; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -2.35rem; top: 0.4rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 0 20px var(--accent-glow); }
+.timeline-item:nth-child(2)::before { background: var(--accent2); box-shadow: 0 0 20px rgba(6,214,160,0.4); }
+.timeline-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.timeline-header .company { font-size: 1.3rem; font-weight: 600; }
+.timeline-header .period { font-size: 0.8rem; color: var(--text-muted); padding: 0.25rem 0.75rem; border: 1px solid var(--border); border-radius: 100px; white-space: nowrap; }
+.timeline-header .role { font-size: 0.9rem; color: var(--accent); width: 100%; }
+.timeline-detail { list-style: none; }
+.timeline-detail li { color: var(--text-dim); font-size: 0.9rem; padding: 0.35rem 0; padding-left: 1rem; position: relative; }
+.timeline-detail li::before { content: '—'; position: absolute; left: 0; color: var(--text-muted); }
+
+/* ========== PORTFOLIO CARDS ========== */
+.portfolio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+.portfolio-card {
+  position: relative; border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border); cursor: none;
+  transition: all 0.4s var(--transition); background: var(--surface);
+}
+.portfolio-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.1); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.portfolio-card-featured { grid-column: 1 / -1; }
+.portfolio-card-featured .card-media-wrap { aspect-ratio: 21/9; }
+.portfolio-card-featured .portfolio-card-body h4 { font-size: 1.4rem; }
+.portfolio-card-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; transition: transform 0.6s var(--transition); }
+.portfolio-card video.portfolio-card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.portfolio-card .card-media-wrap { position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; }
+.portfolio-card .card-media-wrap img,
+.portfolio-card .card-media-wrap video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--transition); }
+.portfolio-card:hover .card-media-wrap img,
+.portfolio-card:hover .card-media-wrap video { transform: scale(1.05); }
+.portfolio-card .play-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.65); color: #fff; font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 6px; z-index: 2; pointer-events: none; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 0.3rem; }
+.portfolio-card .card-link { position: absolute; inset: 0; z-index: 3; }
+.portfolio-card-body { padding: 1.5rem; }
+.portfolio-card-body h4 { font-size: 1.1rem; margin-bottom: 0.4rem; }
+.portfolio-card-body p { font-size: 0.85rem; color: var(--text-dim); }
+.portfolio-card-body .tags { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.portfolio-card-body .tag { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 100px; background: rgba(255,255,255,0.05); color: var(--text-dim); }
+
+/* ========== ARTICLES TABS ========== */
+.articles-tabs { display: flex; gap: 0.6rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.articles-tab {
+  padding: 0.55rem 1.4rem; border-radius: 100px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); font-size: 0.85rem; font-weight: 500;
+  cursor: none; transition: all 0.3s; font-family: inherit;
+}
+.articles-tab:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+.articles-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.articles-tab .count { font-size: 0.7rem; opacity: 0.6; margin-left: 0.3rem; }
+.articles-list { display: none; flex-direction: column; gap: 0.4rem; max-height: 520px; overflow-y: auto; padding-right: 0.5rem; }
+.articles-list.active { display: flex; }
+.articles-list::-webkit-scrollbar { width: 4px; }
+.articles-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.article-link {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm); text-decoration: none; color: var(--text-dim);
+  border: 1px solid transparent; transition: all 0.3s; font-size: 0.9rem;
+}
+.article-link:hover { background: var(--surface-hover); border-color: var(--border); color: #fff; }
+.article-link .article-index { font-size: 0.7rem; color: var(--text-muted); min-width: 1.8rem; font-variant-numeric: tabular-nums; }
+.article-link .article-title { flex: 1; }
+.article-link .article-arrow { opacity: 0; transition: opacity 0.3s; color: var(--accent); }
+.article-link:hover .article-arrow { opacity: 1; }
+.category-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+/* ========== GAMING STATS ========== */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+.stat-card {
+  padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); transition: all 0.4s; position: relative; overflow: hidden;
+}
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.4s; }
+.stat-card:hover { background: var(--surface-hover); border-color: rgba(255,255,255,0.12); }
+.stat-card:hover::before { opacity: 1; }
+.stat-card .stat-icon { font-size: 2rem; margin-bottom: 1rem; }
+.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+.stat-card .stat-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.3rem; }
+
+/* ========== GAME GRID ========== */
+.game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.game-card {
+  padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); transition: all 0.4s; text-align: center;
+}
+.game-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-4px); background: var(--surface-hover); }
+.game-card .game-name { font-weight: 600; font-size: 0.95rem; }
+.game-card .game-detail { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+/* ========== CONTACT ========== */
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+.contact-info-item { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+.contact-info-item .ci-icon { font-size: 1.5rem; }
+.contact-info-item .ci-text { font-size: 0.9rem; color: var(--text-dim); }
+.contact-info-item .ci-text strong { color: var(--text); display: block; font-size: 1rem; }
+.contact-form { display: flex; flex-direction: column; gap: 1rem; }
+.contact-form input, .contact-form textarea {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1rem; color: var(--text); font-family: inherit; font-size: 0.9rem;
+  transition: all 0.3s; outline: none;
+}
+.contact-form input:focus, .contact-form textarea:focus { border-color: var(--accent); background: var(--surface-hover); }
+.contact-form textarea { min-height: 120px; resize: vertical; }
+
+/* ========== FOOTER ========== */
+footer { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); }
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes floatDown { 0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; } 50% { transform: translateX(-50%) translateY(12px); opacity: 0.3; } }
+@keyframes ringPulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.02); } }
+@keyframes ringSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s var(--transition), transform 0.8s var(--transition); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  nav { padding: 1rem 1.5rem; }
+  nav .nav-links { gap: 1.2rem; }
+  nav .nav-links a { font-size: 0.75rem; }
+  .nav-toggle { display: none; /* reset: only show at 640px */ }
+  section { padding: 4rem 2rem; }
+  .hero { padding: 0 2rem; flex-direction: column; gap: 0; padding-top: 6rem; text-align: center; min-height: auto; padding-bottom: 4rem; }
+  .hero-content { max-width: 100%; }
+  .hero h1 { font-size: clamp(2.8rem, 8vw, 5rem); }
+  .hero .greeting { font-size: 0.85rem; margin-bottom: 1rem; }
+  .hero .hero-meta, .hero .hero-contact { justify-content: center; gap: 1rem; }
+  .hero .cta-group { justify-content: center; }
+  .hero .scroll-indicator { display: none; }
+  .about-grid { grid-template-columns: 1fr; max-width: 600px; margin: 0 auto; }
+  .about-watermark { font-size: 5rem; right: 0; opacity: 0.03; }
+  .section-title { font-size: clamp(2rem, 6vw, 3rem); }
+  .section-number { font-size: 5rem; top: -0.8rem; left: -2rem; }
+  .portfolio-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .portfolio-card-featured { grid-column: 1 / -1; }
+  .portfolio-card-featured .card-media-wrap { aspect-ratio: 21/9; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .articles-list { max-height: 400px; }
+  .timeline { padding-left: 1.5rem; }
+  .timeline-item::before { left: -1.85rem; }
+  footer { padding: 2rem; }
+}
+@media (max-width: 640px) {
+  nav { padding: 1rem; display: flex; justify-content: space-between; align-items: center; mix-blend-mode: normal; background: rgba(11,13,26,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  nav .logo { font-size: 1.2rem; }
+  /* Hamburger button */
+  .nav-toggle { display: flex; flex-direction: column; gap: 4px; background: none; border: none; padding: 8px; cursor: pointer; z-index: 1001; position: relative; }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s var(--transition); }
+  .nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+  .nav-toggle.active span:nth-child(2) { opacity: 0; }
+  .nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+  /* Mobile nav menu */
+  .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; height: 100dvh; background: rgba(14,17,37,0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); flex-direction: column; gap: 0; padding: 5rem 2rem 2rem; transition: right 0.35s var(--transition); z-index: 1000; border-left: 1px solid var(--border); }
+  .nav-links.active { right: 0; }
+  .nav-links a { display: block; padding: 0.8rem 0; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  section { padding: 3rem 1rem; }
+  .hero { padding: 0 1rem; padding-top: 5rem; min-height: auto; padding-bottom: 3rem; }
+  .hero h1 { font-size: 2.4rem; }
+  .hero .greeting { font-size: 0.75rem; letter-spacing: 0.12em; }
+  .hero .hero-meta { gap: 0.5rem; flex-direction: column; align-items: center; }
+  .hero .hero-meta span { font-size: 0.8rem; }
+  .hero .hero-contact { gap: 0.6rem; flex-direction: column; align-items: center; }
+  .hero .hero-contact a, .hero .hero-contact span { font-size: 0.8rem; }
+  .hero .cta-group { flex-direction: column; width: 100%; }
+  .hero .cta-group .btn { width: 100%; justify-content: center; text-align: center; }
+  .section-title { font-size: 1.8rem; }
+  .section-tag { font-size: 0.65rem; letter-spacing: 0.15em; }
+  .section-number { font-size: 3.5rem; top: -0.6rem; left: -1rem; }
+  .section-header { padding-left: 0; }
+  .about-info h3 { font-size: 1.4rem; }
+  .about-info .bio { font-size: 0.85rem; line-height: 1.6; }
+  .skill-tags { gap: 0.4rem; }
+  .skill-tag { font-size: 0.7rem; padding: 0.35rem 0.7rem; }
+  .portfolio-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .portfolio-card-featured { grid-column: 1; }
+  .portfolio-card-featured .card-media-wrap { aspect-ratio: 16/10; }
+  .portfolio-card-featured .portfolio-card-body h4 { font-size: 1.1rem; }
+  .portfolio-card-body { padding: 1rem; }
+  .portfolio-card-body h4 { font-size: 0.95rem; }
+  .portfolio-card-body p { font-size: 0.78rem; }
+  .timeline { padding-left: 1.2rem; }
+  .timeline::before { left: 0; }
+  .timeline-item::before { left: -1.55rem; width: 8px; height: 8px; }
+  .timeline-item { padding-bottom: 2rem; }
+  .timeline-header { gap: 0.8rem; }
+  .timeline-header .company { font-size: 1.05rem; }
+  .timeline-header .period { font-size: 0.7rem; }
+  .timeline-detail li { font-size: 0.8rem; padding: 0.25rem 0; padding-left: 0.8rem; }
+  .articles-tabs { gap: 0.4rem; }
+  .articles-tab { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+  .articles-tab .count { display: none; }
+  .articles-list { max-height: 350px; }
+  .article-link { padding: 0.55rem 0.7rem; font-size: 0.8rem; }
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  footer { padding: 1.5rem 1rem; font-size: 0.7rem; }
+  .glow-orb { display: none; }
+  .section-number { display: none; }
+  .about-watermark { display: none; }
+  .hero .hero-avatar-large { width: 180px; height: 180px; }
+  .hero-avatar-ring-outer, .hero-avatar-ring-inner { display: none; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-card { padding: 1.5rem; }
+  .game-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; }
+  .game-card { padding: 1rem; }
+}
+@media (hover: none) { body { cursor: auto; } .cursor, .cursor-follower { display: none; } }
+/* iOS safe-area padding fallback */
+@supports (padding-top: env(safe-area-inset-top)) {
+  nav { padding-top: calc(1.5rem + env(safe-area-inset-top)); padding-left: calc(4rem + env(safe-area-inset-left)); padding-right: calc(4rem + env(safe-area-inset-right)); }
+  @media (max-width: 640px) {
+    nav { padding-top: calc(1rem + env(safe-area-inset-top)); padding-left: calc(1rem + env(safe-area-inset-left)); padding-right: calc(1rem + env(safe-area-inset-right)); }
+    .nav-links { padding-top: calc(5rem + env(safe-area-inset-top)); }
+  }
+}
+body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="cursor"></div>
+<div class="cursor-follower"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="logo">PANG<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">关于</a></li>
+    <li><a href="#experience">经历</a></li>
+    <li><a href="#portfolio">作品</a></li>
+    <li><a href="#articles">文章</a></li>
+    <li><a href="#gaming">游戏</a></li>
+    <li><a href="#contact">联系</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="菜单"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="nav-overlay"></div>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="glow-orb purple"></div>
+  <div class="glow-orb green"></div>
+  <div class="hero-content">
+    <span class="greeting">Game Editor & Content Creator</span>
+    <h1>庞土灏<span class="dot">.</span></h1>
+    <div class="hero-meta">
+      <span>深圳</span>
+      <span>华为 · 游戏编辑</span>
+      <span>网易游戏 · 前内容运营</span>
+    </div>
+    <div class="hero-contact">
+      <a href="mailto:2656209639@qq.com"><span class="contact-dot email"></span>2656209639@qq.com</a>
+      <a href="tel:13536352193"><span class="contact-dot phone"></span>13536352193</a>
+      <span><span class="contact-dot location"></span>广东 · 深圳</span>
+      <span><span class="contact-dot edu"></span>武汉学院 · 网络与新媒体</span>
+    </div>
+    <div class="cta-group">
+      <a href="#portfolio" class="btn btn-primary">查看作品 →</a>
+      <a href="#contact" class="btn btn-outline">联系我</a>
+    </div>
+  </div>
+  <div class="scroll-indicator"><span></span></div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <span class="section-tag">/ 关于我</span>
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2 class="section-title">游戏<span class="highlight">编辑</span>，内容<span class="highlight">创作者</span></h2>
+  </div>
+  <div class="about-grid" style="margin-top:3rem">
+    <div class="about-info reveal">
+      <h3>庞土灏</h3>
+      <span class="role-tag">🎮 游戏编辑 & 内容运营</span>
+      <p class="bio">
+        网络与新媒体专业出身，从网易游戏到华为应用市场，始终深耕游戏内容领域。
+        独立负责 AppGallery 游戏板块内容选题与策划，累计产出 200+ 篇正式文章，
+        涵盖新品首发、版本迭代、游戏文化等多元方向。
+        曾深度访谈《匠木》《霓虹深渊：无限》《墨守孤城》制作人，挖掘产品背后的故事。
+      </p>
+      <div class="skill-tags">
+        <span class="skill-tag">内容策划</span>
+        <span class="skill-tag">文案撰写</span>
+        <span class="skill-tag">游戏编辑</span>
+        <span class="skill-tag">制作人访谈</span>
+        <span class="skill-tag">素材审核</span>
+        <span class="skill-tag">PS / LR</span>
+        <span class="skill-tag">剪映</span>
+        <span class="skill-tag">Claude Code</span>
+        <span class="skill-tag">摄影</span>
+        <span class="skill-tag">数据分析</span>
+        <span class="skill-tag">社区运营</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== EXPERIENCE ===== -->
+<section id="experience">
+  <span class="section-tag">/ 工作经历</span>
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2 class="section-title">职业<span class="highlight">轨迹</span></h2>
+  </div>
+  <div class="timeline reveal" style="margin-top:3rem">
+    <div class="timeline-item">
+      <div class="timeline-header">
+        <span class="company">万宝盛华（外派华为）</span>
+        <span class="period">2024.11 — 至今</span>
+        <span class="role">游戏编辑</span>
+      </div>
+      <ul class="timeline-detail">
+        <li>独立负责 AppGallery 游戏板块内容选题策划与跨方对接，涵盖新品首发、版本迭代、游戏文化等多元内容</li>
+        <li>协同客户对接图文视频素材资源，按排期完成内容撰写与后台配置上线，累计产出 200+ 篇正式文章</li>
+        <li>核心项目：《异环》《洛克王国：世界》首发专题、《王者荣耀》《三角洲行动》鸿蒙版本上线专题</li>
+        <li>主导鸿蒙"小而美"精品游戏项目全流程对接，深度访谈《匠木》《霓虹深渊：无限》《墨守孤城》制作人</li>
+        <li>担任「编辑之选」栏目责编，累计上线 35+ 篇，为年度游戏榜单评审提供内容支撑</li>
+        <li>承担 AppGallery 游戏品类素材合规审核，保障商店展示内容合规统一</li>
+      </ul>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-header">
+        <span class="company">网易游戏</span>
+        <span class="period">2024.02 — 2024.04</span>
+        <span class="role">内容运营（实习）</span>
+      </div>
+      <ul class="timeline-detail">
+        <li>负责《梦幻西游》手游贴吧宣发稿件撰写、创意构思及文案校对</li>
+        <li>维护贴吧社区环境，及时响应玩家反馈，促进健康积极的社区氛围</li>
+        <li>每周撰写数据分析报告，为内容运营策略提供数据支持与改进建议</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== PORTFOLIO ===== -->
+<section id="portfolio">
+  <span class="section-tag">/ 作品集</span>
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2 class="section-title">精选<span class="highlight">作品</span></h2>
+  </div>
+  <p style="color:var(--text-dim);margin-bottom:2.5rem;max-width:500px">以下是个人最具代表性的游戏内容作品，涵盖专题策划、新品首发、深度访谈等多个方向。</p>
+  <div class="portfolio-grid">
+    <!-- 主打大卡片：视频封面 所见之处皆可抵达 -->
+    <div class="portfolio-card reveal portfolio-card-featured">
+      <a href="https://appgallery.huawei.com/substance/detail?id=35ba3043d5f14716b157e123b10d5496&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <span class="play-badge">▶ 视频</span>
+        <video src="assets/cover_dida.mp4" muted loop playsinline></video>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>所见之处皆可抵达</h4>
+        <p>开放世界探索主题内容，呈现游戏中的无限可能性</p>
+        <div class="tags"><span class="tag">视频专题</span><span class="tag">开放世界</span><span class="tag">主打作品</span></div>
+      </div>
+    </div>
+    <!-- 视频封面：暴风雪倒计时 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=sync07def1886e484f4a95a8070fec7557a4&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <span class="play-badge">▶ 视频</span>
+        <video src="assets/cover_baofengxue.mp4" muted loop playsinline></video>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>暴风雪倒计时</h4>
+        <p>紧张刺激的生存挑战，极限环境下的游戏叙事</p>
+        <div class="tags"><span class="tag">视频专题</span><span class="tag">生存游戏</span></div>
+      </div>
+    </div>
+    <!-- 视频封面：最有梗的搜打撤 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=sync010578dc1f93454a875108be3821ccb3&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <span class="play-badge">▶ 视频</span>
+        <video src="assets/cover_soudache.mp4" muted loop playsinline></video>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>最有梗的搜打撤</h4>
+        <p>轻松诙谐的游戏文化内容，用梗连接玩家日常</p>
+        <div class="tags"><span class="tag">视频专题</span><span class="tag">游戏文化</span></div>
+      </div>
+    </div>
+    <!-- 视频封面：精灵一直在等你 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=327625879e7c4b5d97b6d8c546fbb80c&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <span class="play-badge">▶ 视频</span>
+        <video src="assets/cover_jingling.mp4" muted loop playsinline></video>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>精灵一直在等你</h4>
+        <p>精灵题材游戏情怀向内容，唤起玩家收集与养成回忆</p>
+        <div class="tags"><span class="tag">视频专题</span><span class="tag">养成收集</span></div>
+      </div>
+    </div>
+    <!-- 图片封面：《落日山丘》 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=sync7e8f32cfc3d44d4b8eccccc331bff879&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <img src="assets/cover_luori.jpg" alt="落日山丘">
+      </div>
+      <div class="portfolio-card-body">
+        <h4>《落日山丘》</h4>
+        <p>绘本风解谜佳作，温暖治愈的旅程故事</p>
+        <div class="tags"><span class="tag">新品推荐</span><span class="tag">独立游戏</span></div>
+      </div>
+    </div>
+    <!-- 图片封面：中国星次人物：降娄 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=61a0bca21a2a4eb1a4a96182eaf07d9f&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <img src="assets/cover_jianglou.jpg" alt="中国星次人物：降娄">
+      </div>
+      <div class="portfolio-card-body">
+        <h4>中国星次人物：降娄</h4>
+        <p>传统文化与游戏角色融合，星次人物系列专题</p>
+        <div class="tags"><span class="tag">文化专题</span><span class="tag">系列内容</span></div>
+      </div>
+    </div>
+    <!-- 图片封面：变数无处不在 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=sync3aed431e02f64d43b95d04dbe30dde76&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <img src="assets/cover_bianshu.jpg" alt="变数无处不在">
+      </div>
+      <div class="portfolio-card-body">
+        <h4>变数无处不在</h4>
+        <p>游戏中的随机性与策略深度，机制解析向内容</p>
+        <div class="tags"><span class="tag">游戏文化</span><span class="tag">机制解析</span></div>
+      </div>
+    </div>
+    <!-- 图片封面：武备录：弓箭 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=98187327c1964f7f94fcf10e4e84fde0&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <img src="assets/cover_gongjian.jpg" alt="武备录：弓箭">
+      </div>
+      <div class="portfolio-card-body">
+        <h4>武备录：弓箭</h4>
+        <p>游戏武器考据系列，从历史到虚拟世界的弓箭文化</p>
+        <div class="tags"><span class="tag">武备录系列</span><span class="tag">武器考据</span></div>
+      </div>
+    </div>
+    <!-- 图片封面：百兵之君：剑 -->
+    <div class="portfolio-card reveal">
+      <a href="https://appgallery.huawei.com/substance/detail?id=sync5d27bc7a87ec404d92ebe2ebf8b0d01f&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap">
+        <img src="assets/cover_jian.jpg" alt="百兵之君：剑">
+      </div>
+      <div class="portfolio-card-body">
+        <h4>百兵之君：剑</h4>
+        <p>游戏武器考据系列，剑在各大游戏中的文化符号与设计</p>
+        <div class="tags"><span class="tag">武备录系列</span><span class="tag">武器考据</span></div>
+      </div>
+    </div>
+    <!-- 小而美 · B站视频 x3 -->
+    <div class="portfolio-card reveal">
+      <a href="https://www.bilibili.com/video/BV1LW4tzRENQ/" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap" style="background:linear-gradient(135deg, #1a1a2e, #16213e);display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;padding:1.5rem">
+          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
+          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《匠木》</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
+        </div>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>HarmonyOS 欢迎《匠木》入驻</h4>
+        <p>采访开发者，挖掘榫卯结构背后的创作理念</p>
+        <div class="tags"><span class="tag">B站视频</span><span class="tag">小而美</span></div>
+      </div>
+    </div>
+    <div class="portfolio-card reveal">
+      <a href="https://www.bilibili.com/video/BV1zFCiB3EcY/" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap" style="background:linear-gradient(135deg, #1a1a2e, #0f3460);display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;padding:1.5rem">
+          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
+          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《霓虹深渊：无限》</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
+        </div>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>HarmonyOS 欢迎《霓虹深渊：无限》入驻</h4>
+        <p>对话制作人，探寻地牢 Roguelike 的设计哲学</p>
+        <div class="tags"><span class="tag">B站视频</span><span class="tag">小而美</span></div>
+      </div>
+    </div>
+    <div class="portfolio-card reveal">
+      <a href="https://www.bilibili.com/video/BV1g6BSBXEui/" target="_blank" rel="noopener" class="card-link"></a>
+      <div class="card-media-wrap" style="background:linear-gradient(135deg, #16213e, #1a1a2e);display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;padding:1.5rem">
+          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
+          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《墨守孤城》</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
+        </div>
+      </div>
+      <div class="portfolio-card-body">
+        <h4>HarmonyOS 欢迎《墨守孤城》入驻！</h4>
+        <p>与制作人探讨国风策略游戏的世界构建</p>
+        <div class="tags"><span class="tag">B站视频</span><span class="tag">小而美</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ARTICLES ===== -->
+<section id="articles">
+  <span class="section-tag">/ 发表文章</span>
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2 class="section-title">200+ 篇<span class="highlight">内容</span>已上线</h2>
+  </div>
+  <p style="color:var(--text-dim);margin-bottom:2rem;max-width:600px">以下为 AppGallery 正式上线的游戏内容文章，按类别整理，点击标题即可跳转原文：</p>
+
+  <div class="articles-tabs reveal">
+    <button class="articles-tab active" data-tab="tab-hongmeng">🚀 鸿蒙首发<span class="count">(32)</span></button>
+    <button class="articles-tab" data-tab="tab-editor">⭐ 编辑之选<span class="count">(30)</span></button>
+    <button class="articles-tab" data-tab="tab-dev">💬 开发者说<span class="count">(3)</span></button>
+    <button class="articles-tab" data-tab="tab-other">📂 其他<span class="count">(104)</span></button>
+  </div>
+
+  <div class="articles-list active reveal" id="tab-hongmeng">
+    <p class="category-count">首发鸿蒙应用市场或第一次上架鸿蒙应用市场的 Story · 共 32 篇</p>
+  </div>
+  <div class="articles-list reveal" id="tab-editor">
+    <p class="category-count">经过评选的游戏推荐内容 · 共 30 篇</p>
+  </div>
+  <div class="articles-list reveal" id="tab-dev">
+    <p class="category-count">采访开发者，由开发者给出的攻略 · 共 3 篇</p>
+  </div>
+  <div class="articles-list reveal" id="tab-other">
+    <p class="category-count">游戏文化、武器考据、星次人物等综合内容 · 共 104 篇</p>
+  </div>
+</section>
+
+
+<!-- ===== GAMING ===== -->
+<section id="gaming">
+  <span class="section-tag">/ 游戏经历</span>
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2 class="section-title">玩家<span class="highlight">身份</span></h2>
+  </div>
+
+  <div class="skill-tags reveal" style="margin-bottom:2.5rem">
+    <span class="skill-tag" style="border-color:rgba(124,92,252,0.4);color:#fff">👑 王者荣耀 · 荣耀王者 / 巅峰1800 / V8</span>
+    <span class="skill-tag">⚔️ 永劫无间 · 无间修罗 / 累计2000+</span>
+    <span class="skill-tag">🌸 阴阳师 · 签到2000+天 / 斗技九段</span>
+    <span class="skill-tag" style="border-color:rgba(6,214,160,0.4)">🐉 鸣潮 · 100%收集 / 600+天</span>
+    <span class="skill-tag">🌀 异环 · 100%收集 / 全勤</span>
+    <span class="skill-tag">🏰 洛克王国：世界 · Lv.62 / 大师决斗家</span>
+  </div>
+
+  <p style="color:var(--text-muted);font-size:0.85rem;max-width:600px;line-height:2">
+    已通关：黑神话：悟空&nbsp;/&nbsp;明末：渊虚之羽&nbsp;/&nbsp;双人成行&nbsp;/&nbsp;双影奇境&nbsp;/&nbsp;烟火&nbsp;/&nbsp;去月球&nbsp;/&nbsp;寻找天堂&nbsp;/&nbsp;火山的女儿&nbsp;/&nbsp;心渊梦境
+    <br>
+    深度体验：尘白禁区 Lv.100&nbsp;/&nbsp;原神 Lv.57&nbsp;/&nbsp;重返未来：1999&nbsp;/&nbsp;崩坏3&nbsp;/&nbsp;三角洲行动&nbsp;/&nbsp;守望先锋&nbsp;/&nbsp;无期迷途
+  </p>
+</section>
+
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+  <span class="section-tag">/ 联系我</span>
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2 class="section-title">保持<span class="highlight">联系</span></h2>
+  </div>
+  <div class="reveal" style="margin-top:3rem;display:flex;gap:2rem;flex-wrap:wrap;align-items:center">
+    <a href="mailto:2656209639@qq.com" class="btn btn-outline">📧 2656209639@qq.com</a>
+    <a href="tel:13536352193" class="btn btn-outline">📱 13536352193</a>
+    <span style="color:var(--text-dim);font-size:0.9rem">📍 广东 · 深圳</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>© 2026 庞土灏 · 用文字与热爱，连接每一个游戏瞬间</p>
+</footer>
+
+<script>
+// ========== MOBILE NAV TOGGLE ==========
+const navToggle = document.querySelector('.nav-toggle');
+const navLinks = document.querySelector('.nav-links');
+const navOverlay = document.querySelector('.nav-overlay');
+
+navToggle.addEventListener('click', () => {
+  navToggle.classList.toggle('active');
+  navLinks.classList.toggle('active');
+  navOverlay.classList.toggle('active');
+  document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+});
+
+navOverlay.addEventListener('click', () => {
+  navToggle.classList.remove('active');
+  navLinks.classList.remove('active');
+  navOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+});
+
+// Close nav when a link is clicked
+navLinks.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    navToggle.classList.remove('active');
+    navLinks.classList.remove('active');
+    navOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+});
+
+// ========== DETECT TOUCH DEVICE ==========
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// ========== CUSTOM CURSOR (skip on touch) ==========
+const cursor = document.querySelector('.cursor');
+const follower = document.querySelector('.cursor-follower');
+let mouseX = 0, mouseY = 0, followerX = 0, followerY = 0;
+
+if (!isTouchDevice) {
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+  });
+
+  const animate = () => {
+    followerX += (mouseX - followerX) * 0.12;
+    followerY += (mouseY - followerY) * 0.12;
+    follower.style.left = followerX - 20 + 'px';
+    follower.style.top = followerY - 20 + 'px';
+    requestAnimationFrame(animate);
+  };
+  animate();
+
+  document.querySelectorAll('a, button, .btn, .portfolio-card, .game-card, .article-chip, input, textarea, .stat-card').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); follower.classList.add('hover'); });
+    el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); follower.classList.remove('hover'); });
+  });
+}
+
+// ========== VIDEO: HOVER ON DESKTOP, TAP ON TOUCH ==========
+document.querySelectorAll('.portfolio-card video').forEach(video => {
+  const card = video.closest('.portfolio-card');
+  if (isTouchDevice) {
+    // Tap to play/pause on mobile
+    let playing = false;
+    video.pause();
+    card.addEventListener('click', (e) => {
+      // Don't interfere with the card link
+      if (e.target.tagName === 'A') return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (playing) { video.pause(); playing = false; }
+      else { video.play(); playing = true; }
+    });
+  } else {
+    card.addEventListener('mouseenter', () => { video.play(); });
+    card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+  }
+});
+
+// ========== PARTICLES ==========
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() {
+    this.reset();
+    this.color = null;
+  }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.5 + 0.1;
+  }
+  update(mx, my) {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    const dx = mx - this.x, dy = my - this.y, dist = Math.sqrt(dx*dx+dy*dy);
+    if (dist < 200) {
+      this.x += dx * 0.001;
+      this.y += dy * 0.001;
+    }
+    if (this.x < -10 || this.x > canvas.width + 10 || this.y < -10 || this.y > canvas.height + 10) {
+      this.reset();
+    }
+  }
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color || `rgba(255,255,255,${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+  const particleCount = window.innerWidth < 640 ? 60 : 200;
+  for (let i = 0; i < particleCount; i++) {
+    const p = new Particle();
+    // 随机给少量粒子彩色
+    if (Math.random() < 0.15) {
+      const colors = ['rgba(108,125,255,0.35)', 'rgba(125,211,252,0.25)', 'rgba(192,132,252,0.2)'];
+      p.color = colors[Math.floor(Math.random() * colors.length)];
+      p.size = Math.random() * 3 + 1;
+    }
+    particles.push(p);
+  }
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.update(mouseX, mouseY);
+    p.draw(ctx);
+  });
+  // draw connections (skip on mobile for performance)
+  if (window.innerWidth >= 640) {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - dist/100)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ========== SCROLL REVEAL ==========
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+revealEls.forEach(el => observer.observe(el));
+
+// ========== ARTICLES DATA & TABS ==========
+const articlesData = {
+  hongmeng: [
+    { title: '所见之处皆可抵达', url: '35ba3043d5f14716b157e123b10d5496' },
+    { title: '精灵一直在等你', url: '327625879e7c4b5d97b6d8c546fbb80c' },
+    { title: 'BOSS，WELCOME BACK！', url: '681fb27d7ff043cd87ffecfe816e4f65' },
+    { title: '好久不见，英雄在世界等你', url: '539d2a63efe843d793295c5d473ee2af' },
+    { title: '"TIME TO SHINE!"', url: 'synca79a1145b6494d4cabb00f72d2aaff47' },
+    { title: '什么是稳健流？', url: 'sync8f38d92b6d7b41498c5ca9948aa3fc8f' },
+    { title: '重逢在平行时空', url: 'sync0d2ad856cbe74e4a877940f37b345a73' },
+    { title: '变数无处不在', url: 'sync3aed431e02f64d43b95d04dbe30dde76' },
+    { title: '旅程的终点是……', url: 'synca257c2cbb76a47408b9def73804d0bd2' },
+    { title: '躺着也能救世', url: 'synca8d62dd8ae124641a3bf02bf730d32e7' },
+    { title: '民心', url: 'sync2dabb60458514d478c0a78f6c0bc4628' },
+    { title: '在末世里火车跑商', url: 'sync9e8e6188fcb54a49b4a71ff19109d82e' },
+    { title: '超绝 P 人的度假', url: 'sync2155ea6e00ec4e49948d69f87918013e' },
+    { title: 'ALEA IACTA EST：骰子已经掷下', url: 'sync5a332ce6a5024e4d85aa57f6bc1a77e7' },
+    { title: '忘记唐三的故事', url: 'sync9ccdfbc8c466424ea27fc05fce27c43e' },
+    { title: '再次踏上奥奇大陆', url: 'sync4c58df8944aa4f4c99bc47cbf9341076' },
+    { title: '什么是 COK-like？', url: 'sync195c7baaf92d4546b6a49a3bcf29cbfd' },
+    { title: '暴风雪倒计时', url: 'sync07def1886e484f4a95a8070fec7557a4' },
+    { title: '战棋的山', url: 'synce1c6665af89c4f4cb07f0b25c1532f66' },
+    { title: 'BUILD EVERYTHING', url: 'synccc7b1eb4b9034149afd7d362af570c1b' },
+    { title: '元素植物，进化！', url: 'syncfea844d18707454aa3c23fa19ec3d927' },
+    { title: '最有梗的搜打撤', url: 'sync010578dc1f93454a875108be3821ccb3' },
+    { title: '冒险暂停，交朋友时间到', url: 'sync09c931026f0e454f8563cb3b49fe9a07' },
+    { title: '一念登仙', url: 'sync547465f5037943439fd2704f0eb8804b' },
+    { title: '奇怪，一天过得太快了', url: 'sync21fa0ddb2c57454bb98a9627fed5f55b' },
+    { title: '你能改写爱的结局', url: 'syncb914948083274949a2fba1a580d1e5a5' },
+    { title: '处处是江湖', url: '986d2511ffa946fbaefdd5607350d9b5' },
+    { title: '绿水镇逃离指南', url: 'e01ef6463af4492f9d3685ae8a1669c8' },
+    { title: '月光之下，书写新的篇章', url: 'syncdd786c4a64f64d499e187b4eee06eb0d' },
+    { title: '战场指挥家', url: 'synccff5ed1f5b68404f98195c84c4089a0e' },
+    { title: '既要又要', url: '218f95aa893f4bae9bd11011a060a83b' },
+    { title: '开辟黄金航线', url: '8976306f6e63413fb383e9e3b0d63a8e' },
+    { title: '职业混搭', url: 'synced30ee929ef4444ca2d0a77e80fe51a8' },
+    { title: '按下快门，世界有点不一样', url: 'sync3826a1c102be4a48aa6d94d4d7de4b29' }
+  ],
+  editor: [
+    { title: '《假日乐消消》', url: 'sync5f507cd0a7c0444780bc8f7ea4eb3eb4' },
+    { title: '《决胜巅峰》', url: 'ecc24ede2a4a45cd938f0d1393a180dd' },
+    { title: '《境·界 刀鸣》', url: 'e4d2bd0295b441d98bcc1e2578cba3ea' },
+    { title: '《珍珠海大冒险》', url: 'f37c2b7ce8a54187a0c02a8e595fed3b' },
+    { title: '《墨守孤城》', url: '00943465757349138104d12c030a26c2' },
+    { title: '《鹅鸭杀》', url: '05338c5e9c1346a39c8a5d3d8b9adf7d' },
+    { title: '《三国群英传：策定九州》', url: 'a95e6f238d224333b819efb04e865aa9' },
+    { title: '《九牧之野》', url: 'a3b689d832f042dc913e9d75c7791ecc' },
+    { title: '《三国望神州》', url: '8bf2cbaa354b47b59b89fbd48e51d91a' },
+    { title: '《三角洲行动》', url: 'c8e8f8118a8e4de7b6c0104b520e3119' },
+    { title: '《龙石战争》', url: 'd8b1cf4c9d2c47c8b7205f94fc73b44b' },
+    { title: '《地下城堡 4：骑士与破碎编年史》', url: 'sync8f7c54f9ca214f4d9b407383140c9677' },
+    { title: '《黑子的篮球：街头对决》', url: 'sync707990b12577424881fff52c8a0e5ced' },
+    { title: '《龙魂旅人》', url: 'sync7a5a582fb7914f49b69c83d240fd847e' },
+    { title: '《西游：笔绘西行》', url: 'sync5500b3d8389e454dbe06cb61cf52f6e0' },
+    { title: '《暴吵萌厨》', url: 'syncf60d684edfc54f4b8a7eea117b454a7e' },
+    { title: '《群星纪元》', url: 'synca981932fe55c4c448962c0eb8e9b4280' },
+    { title: '《超能机器人》', url: 'c06a4eb9e6604b638c0e580aed921793' },
+    { title: '《落日山丘》', url: 'sync7e8f32cfc3d44d4b8eccccc331bff879' },
+    { title: '《不良人：破局》', url: 'sync3f45b98241f341428de508ea6601eb7f' },
+    { title: '《踏风行》', url: 'syncb427a5b911fe4341ba57038a5e2ed603' },
+    { title: '《英勇之地》', url: 'sync7ae5614eea02474983883d63686431d4' },
+    { title: '《苍翼：混沌效应》', url: 'sync472a6e0d4f324549b8068a88340b75c1' },
+    { title: '《潮汐守望者》', url: 'sync73fd1bc803b04740b0501a60b1eb5ace' },
+    { title: '《新月同行》', url: 'syncbb40064d01554547a20233e50ea3c809' },
+    { title: '《完美的一天》', url: 'sync69b030c9bb074640b5c9049b5de6c7d6' },
+    { title: '《亿万光年》', url: '218c9263bcaa4fad8ec6d5ef7aeefa9d' },
+    { title: '《边缘空间》', url: '0e6f6f1d952e46438b35a657fb913f41' },
+    { title: '《梦境护卫队》', url: '11a1f446d6f3466dbb4f5e4f9e53937e' },
+    { title: '《洛克王国：世界》', url: '0090e2efec244bb59962ea702dd972ae' }
+  ],
+  dev: [
+    { title: '有意外，才好玩', url: 'sync6c4366e86ccf494c97f42aa69b911324' },
+    { title: '怎样成为竞技场高手', url: 'sync95e412b3b886424ba46f42f9ed1a9fe4' },
+    { title: '榫卯', url: 'b29426823acf40f3925841ff826fcdfc' }
+  ],
+  other: [
+    { title: '中国星次人物：降娄（Jiàng Lóu）', url: '61a0bca21a2a4eb1a4a96182eaf07d9f' },
+    { title: '武备录：弓箭', url: '98187327c1964f7f94fcf10e4e84fde0' },
+    { title: '什么是后启示录？', url: 'be1437821702432c869f72a1d5a58091' },
+    { title: '只有山知道', url: '1f2a15bfc2bb4599b57a6dbd1926d0b7' },
+    { title: '是猎人，还是猎物', url: '0679b147d3354b7ab911646d99326053' },
+    { title: '鸿运马上来：自由启航', url: 'fafa08c2c9c746f4ba7747865def7294' },
+    { title: '中国星次人物：娵訾（Jū Zī）', url: '12d6d24787d94010b33849f98c1219cf' },
+    { title: '人，咪想治愈你', url: '85fc91b0703a4ad591b7b4f82955b709' },
+    { title: '未知的边界', url: 'sync1c8fdaf9b8b44142b11712197c487c8c' },
+    { title: '爽文人生', url: '547115c86a2f43f9a44fad59f1d97794' },
+    { title: '顺凡逆仙', url: 'cd2d3a33f01644beaf43981655027aa0' },
+    { title: '我们一起抓水母', url: '9e978772c932478d9cbe02cec768c470' },
+    { title: '大禹', url: '7bd2f5e2557740d1b170fe0e5d671b1d' },
+    { title: '什么是无限流？', url: 'sync226abee97a4a444988a3bdc43226768d' },
+    { title: '魔性萝卜', url: '922404839bd341519b62b0ed953ece7d' },
+    { title: '金字塔近在咫尺', url: 'sync6711d1b2bf304649a5072346eeeddfc0' },
+    { title: '百兵之祖：棍', url: 'sync830af1cbe6394e4e835cd74e20c39bb1' },
+    { title: '变形金刚本刚', url: 'sync5c7b81729ed24841a1a05c9d307ca23a' },
+    { title: '万圣大派对', url: 'sync183e49767473424b90c3e6530b4d4015' },
+    { title: '萌的奥义', url: 'syncfce239bbf8ac474d9afae17f45d61f34' },
+    { title: '十一游戏奇旅：去步行', url: 'sync4648b02053794a419e7b34e32ba9046b' },
+    { title: '中秋新装', url: 'sync0ad47c7d98474b43bf917e343cf3238e' },
+    { title: '他也想成为航海王', url: 'synce9a673a47b20414fa23ed8bc3514360f' },
+    { title: '枭首者', url: 'sync18900464e702484b906bc82e7a0698b1' },
+    { title: '游戏摄影师教你拍大片', url: 'syncb1ca9f8566f24245a95bc0569a4f3cfa' },
+    { title: '剑与魔法九千年', url: 'sync67ec1affa8724c4eae6e32908ec7ab9d' },
+    { title: '"反英雄"', url: 'syncf528651c833446489c57512c6fbfe5a3' },
+    { title: '刺激之夜', url: 'syncc1298b39fc3e4446a420190011ad0572' },
+    { title: '异世界喜剧', url: 'sync4a5534600bed4f4daf06190eec62ba87' },
+    { title: '特摄', url: 'sync1f7a8bcdbe2a4c4fb445e98e9c6403e8' },
+    { title: '蹦迪', url: 'sync40470d7181ab4c4aaff4c7472316c11b' },
+    { title: '百兵之帅：刀', url: 'sync5e39111b04fa4d468b1f4a495a572e11' },
+    { title: '从欢乐走向疯狂', url: 'sync6487ca7299804543be557d34b32c4164' },
+    { title: 'App 一星期', url: 'sync6d62ab122208464d85173f51a171082a' },
+    { title: '夏日追光计划：希望', url: 'sync5904a41e0b1c4c46ab00368233f7161c' },
+    { title: '2025 欧冠终极对决', url: 'syncb2f33cfb8fd3414aa00f198ea1eb984d' },
+    { title: '百兵之君：剑', url: 'sync5d27bc7a87ec404d92ebe2ebf8b0d01f' },
+    { title: '终极觉醒', url: 'sync9d4371d4c9fb44458933cc6e02e825c7' },
+    { title: '破茧重生', url: 'sync1356d3c0654d4241be463fbbfc0c827c' },
+    { title: '冰魄幽兰', url: 'syncd91f720053af4f4d922668b5487ae0f4' },
+    { title: '向宇宙空间折跃', url: 'sync4028eb2bd97943479d54ee6e33e11854' },
+    { title: '为什么喜欢宫爆老奶奶？', url: 'sync9269e28185964340918da40cef090b90' },
+    { title: '让大脑专注思考', url: 'sync692bce7403204649964f2ac09782e93b' },
+    { title: '如何镂月裁云，绘影传神？', url: 'sync396fcc8b5dee4245b88a3965b4a883b9' },
+    { title: '猎人的试炼', url: 'sync209fa31135ce4a419cc892f26eead4a0' },
+    { title: '巨龙咆哮', url: 'sync39613d6266be4c45b55b36c54469c743' },
+    { title: '莫欺少年穷', url: 'sync710cf11e0dd64743a1f81bd098d8ca85' },
+    { title: '手机里的毛孩子', url: 'syncbb5d3dacf37548479885d860d40f5170' },
+    { title: '什么是新怪谈？', url: 'sync3ce67ba7b6ee424eb5f5b3159ca4c92b' },
+    { title: '人鱼传说', url: 'sync70a372b1c9ba4543a3ba3ca5b9b2ff23' },
+    { title: '堕落的海军少将', url: 'syncfc1b833df9354a4ea1a7e3aa77e55eaf' },
+    { title: '机械姬', url: 'sync76b98448b2d4444bbe98cdf0c248c81a' },
+    { title: '新航海王的诞生', url: 'synca077728971fa484b98a2074843ef62b8' },
+    { title: '什么是本格推理？', url: 'sync3e98cdd7e305494e963261b2d979a796' },
+    { title: '超越分辨率', url: 'sync1daf67a6fc7d4a4fb73f3160757144db' },
+    { title: '悟空来', url: 'sync2bd1e9aa5836454fba472e7177a3adbb' },
+    { title: '时不我待', url: 'syncea5b0c7d9e0a414bab709503a511ef5a' },
+    { title: '凤鸣神都', url: 'sync6ef015e700e94e40acfc252349ca2000' },
+    { title: '少林何以称第一？', url: 'sync0a9db7bc4bb24044b7acaca50cc2d0d7' },
+    { title: '为什么他们是门面英雄？', url: 'sync8e788d6fc1dd424d84bf70852be545de' },
+    { title: '修真幻想乡', url: 'syncdf06dfe5e5ca474ca7f04201e0c50f89' },
+    { title: '北荒之主', url: 'sync8aed9a9d7a454f4db474ab10622c29ec' },
+    { title: '小饭馆也有大人物', url: 'sync3b953cc75b4b4c499b2eee6ca870b04a' },
+    { title: '是孙夫人，还是孙尚香', url: 'sync26945f41dc2d4f45838126f6050dc8c7' },
+    { title: '直面超自然', url: 'syncf9561d99a83f4a4e96d9632cfa521161' },
+    { title: '岛屿之外', url: 'sync8c107b2ed120484d820aeca99da920da' },
+    { title: '谢谢你让我成为了人', url: 'synce013df25f75b4c44975d47a8335bc77b' },
+    { title: '与少女的记忆', url: 'sync437c9cde58b44245b7fbfa6e29faa5ef' },
+    { title: '不问春风意，这城有剑来', url: 'syncb0d971025c0e434996f306995130152d' },
+    { title: '不完美的奥斯汀', url: 'syncab51d0ba53184e4a819a18b3a83a713e' },
+    { title: '为什么足球是 11 个人踢？', url: 'sync7a12da46e3f5424d9d2349e5fcf14b9d' },
+    { title: '生存至上', url: 'sync36f46e009107494f8f0cba28cb5a1c9f' },
+    { title: '英雄李文', url: 'syncd7ccbc1daf0c4240b0702382289d912a' },
+    { title: '必以剑终', url: 'sync6b31087cc117484a95bac149a4413978' },
+    { title: '中国星次人物：鹑首', url: 'f807d837aa884590ac104b537b471028' },
+    { title: '漂泊者，请踏上属于你的旅途', url: 'd4a23b48b1bc4198a02acf88091997e5' },
+    { title: '向阳岛热门笔记已发布', url: '426fb12e257c499395355824bc3c69a5' },
+    { title: '洛克马戏团，好戏开场', url: 'ea245cd980964156b8ea8ae397ce6330' },
+    { title: '中国星次人物：实沈', url: 'cc7b9661b099457a82e54a5adde0f674' },
+    { title: '武备录：战车', url: '572c8215dbcb4d38bfea028a4605692d' },
+    { title: '最有面子的四皇', url: '5bbf7e5de2ce486d9b9494886a3e6c96' },
+    { title: '武备录：盔甲', url: 'bc1960a0f7e3466dbdd0b5755eec513d' },
+    { title: '踏上新的冒险：旅人酒馆', url: '1991d1b56f1c4ac0adb0f624d6b2a072' },
+    { title: '武备录：盾牌', url: '1a5d5049757a4e99aafa103dc4407a12' },
+    { title: '原型图谱：女武神', url: '7a00dc43900e4cb5a13b6f1dcfa23aab' },
+    { title: '踏上新的冒险：天空之塔', url: '68b6fa8940f94282bb3eb0f7a013bd91' },
+    { title: '鸿运马上来：熠马当先', url: '5cc3a06b76ca4c618fa22202c93369be' },
+    { title: '中国星次人物：大梁', url: 'c5af39aa218d4a91b5d48c88b09478c2' },
+    { title: '跟着听泉来鉴宝', url: 'e801f14f5375446dba642b129747012b' },
+    { title: '触摸马格里特的《恋人》', url: '62e4559083f44c278f6dcfa9321f5685' }
+  ]
+};
+
+// 去重（编辑之选中《三国望神州》重复出现）
+articlesData.editor = articlesData.editor.filter((item, idx, arr) =>
+  arr.findIndex(t => t.url === item.url) === idx
+);
+
+function buildArticleLink(item, idx) {
+  return `<a href="https://appgallery.huawei.com/substance/detail?id=${item.url}&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="article-link"><span class="article-index">${String(idx + 1).padStart(2, '0')}</span><span class="article-title">${item.title}</span><span class="article-arrow">↗</span></a>`;
+}
+
+// 填充各分类列表
+['hongmeng','editor','dev','other'].forEach(cat => {
+  const container = document.getElementById('tab-' + cat);
+  const html = articlesData[cat].map(buildArticleLink).join('');
+  container.innerHTML = container.querySelector('.category-count').outerHTML + html;
+});
+
+// Tab 切换
+document.querySelectorAll('.articles-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.articles-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.articles-list').forEach(l => l.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== PARALLAX GLOW ORBS ==========
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  document.querySelectorAll('.glow-orb').forEach((orb, i) => {
+    const speed = (i + 1) * 0.03;
+    orb.style.transform = `translateY(${scrolled * speed}px)`;
+  });
+});
+</script>
+
+</body>
+</html>
