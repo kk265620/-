@@ -264,17 +264,9 @@ section:nth-child(even) { background: rgba(255,255,255,0.01); }
   transition: all 0.4s var(--transition); background: var(--surface);
 }
 .portfolio-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.1); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-.portfolio-card-featured { grid-column: 1 / -1; }
-.portfolio-card-featured .card-media-wrap { aspect-ratio: 21/9; }
-.portfolio-card-featured .portfolio-card-body h4 { font-size: 1.4rem; }
-.portfolio-card-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; transition: transform 0.6s var(--transition); }
-.portfolio-card video.portfolio-card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 .portfolio-card .card-media-wrap { position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; }
-.portfolio-card .card-media-wrap img,
-.portfolio-card .card-media-wrap video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--transition); }
-.portfolio-card:hover .card-media-wrap img,
-.portfolio-card:hover .card-media-wrap video { transform: scale(1.05); }
-.portfolio-card .play-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.65); color: #fff; font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 6px; z-index: 2; pointer-events: none; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 0.3rem; }
+.portfolio-card .card-media-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--transition); }
+.portfolio-card:hover .card-media-wrap img { transform: scale(1.05); }
 .portfolio-card .card-link { position: absolute; inset: 0; z-index: 3; }
 .portfolio-card-body { padding: 1.5rem; }
 .portfolio-card-body h4 { font-size: 1.1rem; margin-bottom: 0.4rem; }
@@ -449,8 +441,6 @@ footer { text-align: center; padding: 3rem; color: var(--text-muted); font-size:
   .section-title { font-size: clamp(2rem, 6vw, 3rem); }
   .section-number { font-size: 5rem; top: -0.8rem; left: -2rem; }
   .portfolio-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem; }
-  .portfolio-card-featured { grid-column: 1 / -1; }
-  .portfolio-card-featured .card-media-wrap { aspect-ratio: 21/9; }
   .contact-grid { grid-template-columns: 1fr; }
   .articles-list { max-height: 400px; }
   .exp-cards { grid-template-columns: 1fr; max-width: 500px; }
@@ -491,9 +481,6 @@ footer { text-align: center; padding: 3rem; color: var(--text-muted); font-size:
   .skill-tags { gap: 0.4rem; }
   .skill-tag { font-size: 0.7rem; padding: 0.35rem 0.7rem; }
   .portfolio-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .portfolio-card-featured { grid-column: 1; }
-  .portfolio-card-featured .card-media-wrap { aspect-ratio: 16/10; }
-  .portfolio-card-featured .portfolio-card-body h4 { font-size: 1.1rem; }
   .portfolio-card-body { padding: 1rem; }
   .portfolio-card-body h4 { font-size: 0.95rem; }
   .portfolio-card-body p { font-size: 0.78rem; }
@@ -678,7 +665,7 @@ body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antiali
   <div class="about-grid" style="margin-top:3rem">
     <div class="about-avatar-wrap reveal">
       <div class="about-avatar-glow"></div>
-      <img src="头像.png" alt="庞土灏" class="about-avatar" loading="lazy">
+      <img src="头像.webp" alt="庞土灏" class="about-avatar" loading="lazy">
       <div class="about-avatar-ring"></div>
     </div>
     <div class="about-info reveal">
@@ -762,56 +749,52 @@ body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antiali
   </div>
   <p style="color:var(--text-dim);margin-bottom:2.5rem;max-width:500px">以下是个人最具代表性的游戏内容作品，涵盖专题策划、新品首发、深度访谈等多个方向。</p>
   <div class="portfolio-grid">
-    <!-- 主打大卡片：视频封面 所见之处皆可抵达 -->
-    <div class="portfolio-card reveal portfolio-card-featured">
+    <!-- 所见之处皆可抵达 -->
+    <div class="portfolio-card reveal">
       <a href="https://appgallery.huawei.com/substance/detail?id=35ba3043d5f14716b157e123b10d5496&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
       <div class="card-media-wrap">
-        <span class="play-badge">▶ 视频</span>
-        <video src="作品封面/所见之处皆可抵达.mp4" muted loop playsinline preload="none"></video>
+        <img src="作品封面/所见之处皆可抵达.png" alt="所见之处皆可抵达">
       </div>
       <div class="portfolio-card-body">
         <h4>所见之处皆可抵达</h4>
         <p>开放世界探索主题内容，呈现游戏中的无限可能性</p>
-        <div class="tags"><span class="tag">视频专题</span><span class="tag">开放世界</span><span class="tag">主打作品</span></div>
+        <div class="tags"><span class="tag">专题策划</span><span class="tag">开放世界</span><span class="tag">主打作品</span></div>
       </div>
     </div>
-    <!-- 视频封面：暴风雪倒计时 -->
+    <!-- 暴风雪倒计时 -->
     <div class="portfolio-card reveal">
       <a href="https://appgallery.huawei.com/substance/detail?id=sync07def1886e484f4a95a8070fec7557a4&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
       <div class="card-media-wrap">
-        <span class="play-badge">▶ 视频</span>
-        <video src="作品封面/暴风雪倒计时.mp4" muted loop playsinline preload="none"></video>
+        <img src="作品封面/暴风雪倒计时.png" alt="暴风雪倒计时">
       </div>
       <div class="portfolio-card-body">
         <h4>暴风雪倒计时</h4>
         <p>紧张刺激的生存挑战，极限环境下的游戏叙事</p>
-        <div class="tags"><span class="tag">视频专题</span><span class="tag">生存游戏</span></div>
+        <div class="tags"><span class="tag">专题策划</span><span class="tag">生存游戏</span></div>
       </div>
     </div>
-    <!-- 视频封面：最有梗的搜打撤 -->
+    <!-- 最有梗的搜打撤 -->
     <div class="portfolio-card reveal">
       <a href="https://appgallery.huawei.com/substance/detail?id=sync010578dc1f93454a875108be3821ccb3&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
       <div class="card-media-wrap">
-        <span class="play-badge">▶ 视频</span>
-        <video src="作品封面/最有梗的搜打撤.mp4" muted loop playsinline preload="none"></video>
+        <img src="作品封面/最有梗的搜打撤.png" alt="最有梗的搜打撤">
       </div>
       <div class="portfolio-card-body">
         <h4>最有梗的搜打撤</h4>
         <p>轻松诙谐的游戏文化内容，用梗连接玩家日常</p>
-        <div class="tags"><span class="tag">视频专题</span><span class="tag">游戏文化</span></div>
+        <div class="tags"><span class="tag">专题策划</span><span class="tag">游戏文化</span></div>
       </div>
     </div>
-    <!-- 视频封面：精灵一直在等你 -->
+    <!-- 精灵一直在等你 -->
     <div class="portfolio-card reveal">
       <a href="https://appgallery.huawei.com/substance/detail?id=327625879e7c4b5d97b6d8c546fbb80c&v=1460400000&source=substanceshare" target="_blank" rel="noopener" class="card-link"></a>
       <div class="card-media-wrap">
-        <span class="play-badge">▶ 视频</span>
-        <video src="作品封面/精灵一直在等你.mp4" muted loop playsinline preload="none"></video>
+        <img src="作品封面/精灵一直在等你.png" alt="精灵一直在等你">
       </div>
       <div class="portfolio-card-body">
         <h4>精灵一直在等你</h4>
         <p>精灵题材游戏情怀向内容，唤起玩家收集与养成回忆</p>
-        <div class="tags"><span class="tag">视频专题</span><span class="tag">养成收集</span></div>
+        <div class="tags"><span class="tag">专题策划</span><span class="tag">养成收集</span></div>
       </div>
     </div>
     <!-- 图片封面：《落日山丘》 -->
@@ -875,14 +858,11 @@ body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antiali
       </div>
     </div>
     <!-- 小而美 · B站视频 x3 -->
+    <!-- 匠木 -->
     <div class="portfolio-card reveal">
       <a href="https://www.bilibili.com/video/BV1LW4tzRENQ/" target="_blank" rel="noopener" class="card-link"></a>
-      <div class="card-media-wrap" style="background:linear-gradient(135deg, #1a1a2e, #16213e);display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;padding:1.5rem">
-          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
-          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《匠木》</div>
-          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
-        </div>
+      <div class="card-media-wrap">
+        <img src="作品封面/匠木.webp" alt="匠木">
       </div>
       <div class="portfolio-card-body">
         <h4>HarmonyOS 欢迎《匠木》入驻</h4>
@@ -890,14 +870,11 @@ body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antiali
         <div class="tags"><span class="tag">B站视频</span><span class="tag">小而美</span></div>
       </div>
     </div>
+    <!-- 霓虹深渊：无限 -->
     <div class="portfolio-card reveal">
       <a href="https://www.bilibili.com/video/BV1zFCiB3EcY/" target="_blank" rel="noopener" class="card-link"></a>
-      <div class="card-media-wrap" style="background:linear-gradient(135deg, #1a1a2e, #0f3460);display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;padding:1.5rem">
-          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
-          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《霓虹深渊：无限》</div>
-          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
-        </div>
+      <div class="card-media-wrap">
+        <img src="作品封面/霓虹深渊：无限.avif" alt="霓虹深渊：无限">
       </div>
       <div class="portfolio-card-body">
         <h4>HarmonyOS 欢迎《霓虹深渊：无限》入驻</h4>
@@ -905,14 +882,11 @@ body { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antiali
         <div class="tags"><span class="tag">B站视频</span><span class="tag">小而美</span></div>
       </div>
     </div>
+    <!-- 墨守孤城 -->
     <div class="portfolio-card reveal">
       <a href="https://www.bilibili.com/video/BV1g6BSBXEui/" target="_blank" rel="noopener" class="card-link"></a>
-      <div class="card-media-wrap" style="background:linear-gradient(135deg, #16213e, #1a1a2e);display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;padding:1.5rem">
-          <div style="font-size:2rem;margin-bottom:0.4rem">🎬</div>
-          <div style="font-size:0.9rem;font-weight:600;color:#fff;margin-bottom:0.2rem">《墨守孤城》</div>
-          <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">制作人深度访谈</div>
-        </div>
+      <div class="card-media-wrap">
+        <img src="作品封面/墨守孤城.avif" alt="墨守孤城">
       </div>
       <div class="portfolio-card-body">
         <h4>HarmonyOS 欢迎《墨守孤城》入驻！</h4>
@@ -1058,25 +1032,6 @@ if (!isTouchDevice) {
     el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); follower.classList.remove('hover'); });
   });
 }
-
-// ========== VIDEO: AUTOPLAY WHEN VISIBLE (works on both desktop & mobile) ==========
-document.querySelectorAll('.portfolio-card video').forEach(video => {
-  // Start playing once metadata is loaded
-  video.addEventListener('loadedmetadata', () => {
-    video.play().catch(() => {});
-  });
-  // Pause when video scrolls out of viewport (save resources)
-  const videoObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
-    });
-  }, { threshold: 0.3 });
-  videoObserver.observe(video);
-});
 
 // ========== PARTICLES ==========
 const canvas = document.getElementById('particles');
